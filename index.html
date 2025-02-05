@@ -1,0 +1,56 @@
+<script>
+    const PASSWORD = "DIVALMIGUEL1791794"; 
+    const fileList = document.getElementById("fileList");
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzi-Dx3gO-kHpMCfRtfCQKhBZJ8UfQ-LL_ONXXcZveQriBX6OUuytr938ei1yFNTg8j/exec"; 
+
+    function uploadFile() {
+        const passwordInput = document.getElementById("password").value;
+        if (passwordInput !== PASSWORD) {
+            alert("Contraseña incorrecta");
+            return;
+        }
+
+        const fileInput = document.getElementById("fileInput");
+        if (fileInput.files.length === 0) {
+            alert("Selecciona un archivo");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const fileData = e.target.result.split(',')[1]; // Convertir a base64
+            const fileName = file.name;
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }, // Se usa JSON
+                body: JSON.stringify({
+                    fileData: fileData,
+                    fileName: fileName
+                })
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.startsWith("ERROR:")) {
+                    alert("Error al subir el archivo: " + data);
+                } else {
+                    const listItem = document.createElement("li");
+                    const link = document.createElement("a");
+                    link.href = data;
+                    link.textContent = fileName;
+                    link.target = "_blank";
+                    listItem.appendChild(link);
+                    fileList.appendChild(listItem);
+                    alert("Archivo subido exitosamente");
+                }
+            })
+            .catch(error => {
+                alert("Error al subir el archivo: " + error.message);
+            });
+        };
+
+        reader.readAsDataURL(file);
+    }
+</script>
